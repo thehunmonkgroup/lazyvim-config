@@ -14,7 +14,7 @@ return {
       return vim.fn["codeium#CycleCompletions"](1)
     end, { expr = true, desc = "Codeium: next" })
     vim.keymap.set("i", "<A-;>", vim.fn["codeium#Accept"], { expr = true, desc = "Codeium: accept" })
-    vim.keymap.set("n", "<A-i>", "<cmd>CodeiumAuto<CR>", { desc = "Codeium auto completions" })
-    vim.keymap.set("n", "<A-o>", "<cmd>CodeiumManual<CR>", { desc = "Codeium manual completions" })
+    -- vim.keymap.set("n", "<A-i>", "<cmd>CodeiumAuto<CR>", { desc = "Codeium auto completions" })
+    -- vim.keymap.set("n", "<A-o>", "<cmd>CodeiumManual<CR>", { desc = "Codeium manual completions" })
   end,
 }
