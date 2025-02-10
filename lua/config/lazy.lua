@@ -50,4 +50,8 @@ require("lazy").setup({
       },
     },
   },
+  -- These are customizations.
+  dev = {
+    path = "~/git/nvim",
+  },
 })
