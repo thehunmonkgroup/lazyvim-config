@@ -38,4 +38,19 @@ function _M.get_mason_package_install_path(package_name)
   return package:get_install_path()
 end
 
+function _M.get_active_pyenv_env()
+  local pyenv_root = os.getenv("PYENV_ROOT") or os.getenv("HOME") .. "/.pyenv"
+  local pyenv_exists = vim.fn.isdirectory(pyenv_root) == 1
+  if not pyenv_exists then
+    return nil
+  end
+  local handle = io.popen(pyenv_root .. "/bin/pyenv version-name 2>/dev/null")
+  if not handle then
+    return nil
+  end
+  local env_name = handle:read("*a"):gsub("%s+", "") -- Remove trailing whitespace
+  handle:close()
+  return env_name ~= "" and env_name or nil
+end
+
 return _M
