@@ -38,10 +38,18 @@ function _M.get_mason_package_install_path(package_name)
   return package:get_install_path()
 end
 
-function _M.get_active_pyenv_env()
+function _M.get_pyenv_root()
   local pyenv_root = os.getenv("PYENV_ROOT") or os.getenv("HOME") .. "/.pyenv"
   local pyenv_exists = vim.fn.isdirectory(pyenv_root) == 1
   if not pyenv_exists then
+    return nil
+  end
+  return pyenv_root
+end
+
+function _M.get_active_pyenv_env()
+  local pyenv_root = _M.get_pyenv_root()
+  if not pyenv_root then
     return nil
   end
   local handle = io.popen(pyenv_root .. "/bin/pyenv version-name 2>/dev/null")
@@ -51,6 +59,16 @@ function _M.get_active_pyenv_env()
   local env_name = handle:read("*a"):gsub("%s+", "") -- Remove trailing whitespace
   handle:close()
   return env_name ~= "" and env_name or nil
+end
+
+function _M.get_python_path()
+  local python_path = nil
+  local venv_name = _M.get_active_pyenv_env()
+  if venv_name then
+    local pyenv_root = _M.get_pyenv_root()
+    python_path = string.format("%s/versions/%s/bin/python", pyenv_root, venv_name)
+  end
+  return python_path
 end
 
 return _M

@@ -1,3 +1,22 @@
+local util = require("util")
+
+local function merge_server_customizations(servers)
+  local python_path = util.get_python_path()
+  if python_path then
+    local server_customizations = {
+      basedpyright = {
+        settings = {
+          python = {
+            pythonPath = python_path,
+          },
+        },
+      },
+    }
+    servers = vim.tbl_deep_extend("force", servers or {}, server_customizations)
+  end
+  return servers
+end
+
 return {
   "neovim/nvim-lspconfig",
   opts = function(_, opts)
@@ -9,7 +28,7 @@ return {
       },
     }
     opts.diagnostics = vim.tbl_deep_extend("force", opts.diagnostics or {}, custom_opts)
+    opts.servers = merge_server_customizations(opts.servers)
     return opts
   end,
 }
-
