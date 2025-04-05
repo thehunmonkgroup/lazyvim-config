@@ -22,6 +22,15 @@ map(
 map("n", "<leader>cab", ":call v:lua.delete_hidden_buffers()<CR>", { desc = "Close all other buffers" })
 map("n", "<leader>cab!", ":call v:lua.delete_hidden_buffers(1)<CR>", { desc = "Close all other buffers!" })
 map("n", "<leader>k", ":.w !/usr/local/bin/vim-line-to-task.sh<CR>", { desc = "Convert line to Taskwarrior task" })
+map(
+  "n",
+  "<leader>F",
+  function()
+    require("neo-tree.command").execute({ action = "focus", source = "filesystem", dir = vim.fn.getcwd() })
+  end,
+  { noremap = true, silent = true, desc = "Force Neotree (cwd)" }
+)
+
 
 -- Visual mode
 map("v", "<A-x>", '"+x', { desc = "Cut to clipboard", noremap = true })
