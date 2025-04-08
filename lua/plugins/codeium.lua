@@ -1,6 +1,6 @@
 if os.getenv("OPENAI_API_KEY") then
   return {
-    "Exafunction/codeium.vim",
+    "Exafunction/windsurf.vim",
     event = "BufEnter",
     config = function(_, opts)
       vim.g.codeium_disable_bindings = 1
