@@ -26,6 +26,7 @@ return {
       "jq",
       "json",
       "json5",
+      "jsonnet",
       "lua",
       "make",
       "markdown",
