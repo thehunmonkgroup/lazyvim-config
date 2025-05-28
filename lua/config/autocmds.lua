@@ -7,6 +7,8 @@
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 
+local util = require("util")
+
 -------------------------------------------------
 -- Disable modelines for Taskwarrior data files.
 -------------------------------------------------
@@ -49,5 +51,24 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.bo.autoindent = true
     vim.bo.smartindent = true
     vim.bo.expandtab = true
+  end,
+})
+
+vim.api.nvim_create_autocmd("DirChanged", {
+  group = vim.api.nvim_create_augroup("BasedpyrightAutoRestart", { clear = true }),
+  callback = function()
+    local clients = vim.lsp.get_clients({ name = "basedpyright" })
+    if #clients > 0 then
+      vim.notify("Directory changed, restarting basedpyright...")
+      local python_path = util.get_python_path()
+      if python_path ~= nil then
+        for _, client in ipairs(clients) do
+          client.config.settings.python = client.config.settings.python or {}
+          ---@diagnostic disable-next-line: inject-field
+          client.config.settings.python.pythonPath = python_path
+        end
+      end
+      vim.cmd("LspStart basedpyright")
+    end
   end,
 })
