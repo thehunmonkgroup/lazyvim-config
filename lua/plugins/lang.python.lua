@@ -20,7 +20,6 @@ return {
                 },
               },
               disableOrganizeImports = true,
-              disableTaggedHints = true,
             },
           },
         },
