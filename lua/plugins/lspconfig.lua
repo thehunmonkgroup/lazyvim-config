@@ -5,6 +5,10 @@ local function merge_server_customizations(servers)
   if python_path then
     local server_customizations = {
       basedpyright = {
+        on_attach = function(_client, _bufnr)
+          -- Disable inlay hints by default.
+          vim.lsp.inlay_hint.enable(false)
+        end,
         settings = {
           python = {
             pythonPath = python_path,
