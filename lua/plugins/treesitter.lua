@@ -23,6 +23,7 @@ return {
       "http",
       "ini",
       "javascript",
+      "jinja",
       "jq",
       "json",
       "json5",

@@ -5,11 +5,6 @@ return {
     event = { "BufReadPre", "BufNewFile" },
   },
   {
-    "Glench/Vim-Jinja2-Syntax",
-    event = { "BufReadPre", "BufNewFile" },
-    ft = { "jinja", "jinja2" },
-  },
-  {
     "tolecnal/icinga2-vim",
     event = { "BufReadPre", "BufNewFile" },
     ft = "icinga2",
