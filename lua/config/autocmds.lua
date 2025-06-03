@@ -59,16 +59,10 @@ vim.api.nvim_create_autocmd("DirChanged", {
   callback = function()
     local clients = vim.lsp.get_clients({ name = "basedpyright" })
     if #clients > 0 then
-      vim.notify("Directory changed, restarting basedpyright...")
       local python_path = util.get_python_path()
       if python_path ~= nil then
-        for _, client in ipairs(clients) do
-          client.config.settings.python = client.config.settings.python or {}
-          ---@diagnostic disable-next-line: inject-field
-          client.config.settings.python.pythonPath = python_path
-        end
+        vim.cmd({cmd = "PyrightSetPythonPath", args = {python_path}})
       end
-      vim.cmd("LspStart basedpyright")
     end
   end,
 })
