@@ -17,6 +17,11 @@ local function merge_server_customizations(servers)
       },
     }
     servers = vim.tbl_deep_extend("force", servers or {}, server_customizations)
+    local auto_install_servers = {
+      bashls = {
+      },
+    }
+    servers = vim.tbl_deep_extend("force", servers or {}, auto_install_servers)
   end
   return servers
 end
