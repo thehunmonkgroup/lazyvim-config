@@ -52,12 +52,10 @@ return {
 
     -- Extend ensure_installed without duplicates
     opts.ensure_installed = opts.ensure_installed or {}
-
     local existing = {}
     for _, lang in ipairs(opts.ensure_installed) do
       existing[lang] = true
     end
-
     for _, lang in ipairs(parsers) do
       if not existing[lang] then
         table.insert(opts.ensure_installed, lang)
@@ -65,55 +63,50 @@ return {
       end
     end
 
-    local ts = require("nvim-treesitter")
+    return opts
+  end,
 
-    -- Determine whether a parser is already installed.
-    -- We look for parser/<lang>.so in runtime paths.
-    local function parser_installed(lang)
-      local matches = vim.api.nvim_get_runtime_file(("parser/%s.so"):format(lang), true)
-      return matches and #matches > 0
+  -- Override LazyVim’s treesitter config so non-Colossus installs are SERIAL.
+  config = function(_, opts)
+    local TS = require("nvim-treesitter")
+
+    if not TS.get_installed then
+      return vim.notify("Please update nvim-treesitter", vim.log.levels.ERROR)
+    end
+    if type(opts.ensure_installed) ~= "table" then
+      return vim.notify("opts.ensure_installed must be a table", vim.log.levels.ERROR)
     end
 
-    local function langs_to_install(langs)
-      local todo = {}
-      for _, lang in ipairs(langs) do
-        if not parser_installed(lang) then
-          table.insert(todo, lang)
-        end
-      end
-      return todo
+    TS.setup(opts)
+
+    -- Compute missing parsers
+    local installed = {}
+    for _, lang in ipairs(TS.get_installed() or {}) do
+      installed[lang] = true
     end
 
-    local function install_serial(langs)
-      for _, lang in ipairs(langs) do
-        local ok, handle = pcall(ts.install, { lang })
-        if ok and handle and handle.wait then
-          -- wait UP TO 10 minutes; returns as soon as it's done
-          handle:wait(600000)
-        end
-      end
-    end
-
-    local function install_async(langs)
-      for _, lang in ipairs(langs) do
-        pcall(ts.install, { lang })
+    local missing = {}
+    for _, lang in ipairs(opts.ensure_installed or {}) do
+      if not installed[lang] then
+        table.insert(missing, lang)
       end
     end
 
-    vim.api.nvim_create_autocmd("User", {
-      pattern = "VeryLazy",
-      callback = function()
-        local todo = langs_to_install(opts.ensure_installed)
-        if #todo == 0 then
-          return
-        end
+    if #missing == 0 then
+      return
+    end
 
-        if os.getenv("IS_COLOSSUS") then
-          install_async(todo)
-        else
-          install_serial(todo)
+    if os.getenv("IS_COLOSSUS") then
+      -- parallel/async on Colossus
+      TS.install(missing, { summary = true })
+    else
+      -- strict serial everywhere else
+      for _, lang in ipairs(missing) do
+        local handle = TS.install({ lang }, { summary = true })
+        if handle and handle.wait then
+          handle:wait(600000) -- up to 10 minutes per parser, returns immediately when done
         end
-      end,
-    })
+      end
+    end
   end,
 }
