@@ -57,12 +57,29 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("DirChanged", {
   group = vim.api.nvim_create_augroup("BasedpyrightAutoRestart", { clear = true }),
   callback = function()
+    local python_path = util.get_python_path()
+    if python_path == nil then return end
+
     local clients = vim.lsp.get_clients({ name = "basedpyright" })
-    if #clients > 0 then
-      local python_path = util.get_python_path()
-      if python_path ~= nil then
-        vim.cmd({cmd = "PyrightSetPythonPath", args = {python_path}})
+    if #clients == 0 then return end
+
+    for _, client in ipairs(clients) do
+      if client.settings then
+        -- Update just the python subtable, mirroring upstream exactly
+        client.settings.python = vim.tbl_deep_extend(
+          "force",
+          client.settings.python or {},
+          { pythonPath = python_path }
+        )
+      else
+        client.config.settings = vim.tbl_deep_extend(
+          "force",
+          client.config.settings,
+          { python = { pythonPath = python_path } }
+        )
       end
+      -- Pass nil for settings, NOT client.settings — this is what basedpyright expects
+      client:notify("workspace/didChangeConfiguration", { settings = nil })
     end
   end,
 })
