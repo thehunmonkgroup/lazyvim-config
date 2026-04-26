@@ -77,6 +77,13 @@ return {
       return vim.notify("opts.ensure_installed must be a table", vim.log.levels.ERROR)
     end
 
+    -- Prefer clang for parser compilation if available.
+    -- This affects automatic TS.install() calls too.
+    local ok_install, install = pcall(require, "nvim-treesitter.install")
+    if ok_install and vim.fn.executable("clang") == 1 then
+      install.compilers = { "clang", "cc", "gcc" }
+    end
+
     TS.setup(opts)
 
     -- Compute missing parsers
@@ -97,14 +104,17 @@ return {
     end
 
     if os.getenv("IS_COLOSSUS") then
-      -- parallel/async on Colossus
+      -- Parallel/async on Colossus.
       TS.install(missing, { summary = true })
     else
-      -- strict serial everywhere else
+      -- Strict serial everywhere else.
       for _, lang in ipairs(missing) do
         local handle = TS.install({ lang }, { summary = true })
         if handle and handle.wait then
-          handle:wait(600000) -- up to 10 minutes per parser, returns immediately when done
+          local ok = handle:wait(300000) -- 5 minutes per parser
+          if not ok then
+            vim.notify("Timed out installing treesitter parser: " .. lang, vim.log.levels.WARN)
+          end
         end
       end
     end
