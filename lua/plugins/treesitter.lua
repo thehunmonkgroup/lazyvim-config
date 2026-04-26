@@ -1,5 +1,18 @@
 return {
   "nvim-treesitter/nvim-treesitter",
+
+  init = function()
+    -- nvim-treesitter main uses `tree-sitter build`, which uses Rust cc-rs.
+    -- cc-rs reads compiler choice from process env, not from old
+    -- nvim-treesitter.install compiler lists.
+    --
+    -- This must be set before TS.install().
+    if not os.getenv("IS_COLOSSUS") and vim.fn.executable("clang") == 1 then
+      vim.env.CC = "clang"
+      vim.env.CFLAGS = "-O0 -fPIC -std=c11"
+    end
+  end,
+
   opts = function(_, opts)
     opts.indent = vim.tbl_deep_extend("force", opts.indent or {}, {
       enable = false,
@@ -75,13 +88,6 @@ return {
     end
     if type(opts.ensure_installed) ~= "table" then
       return vim.notify("opts.ensure_installed must be a table", vim.log.levels.ERROR)
-    end
-
-    -- Prefer clang for parser compilation if available.
-    -- This affects automatic TS.install() calls too.
-    local ok_install, install = pcall(require, "nvim-treesitter.install")
-    if ok_install and vim.fn.executable("clang") == 1 then
-      install.compilers = { "clang", "cc", "gcc" }
     end
 
     TS.setup(opts)
