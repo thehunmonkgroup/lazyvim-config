@@ -5,7 +5,10 @@
 vim.opt.relativenumber = false
 vim.opt.number = true
 vim.opt.spell = false
-vim.opt.signcolumn = "auto"
+-- Keep the text column stable when diagnostics or Git signs appear.
+vim.opt.signcolumn = "yes"
+-- Give built-in and otherwise-unconfigured floating windows consistent chrome.
+vim.opt.winborder = "rounded"
 vim.opt.wrap = true
 vim.opt.scrolloff = 8
 vim.opt.undofile = false

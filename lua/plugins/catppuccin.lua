@@ -6,6 +6,18 @@ return {
     opts = function(_, opts)
       opts.flavour = "mocha"
 
+      -- Keep floating windows opaque and their rounded borders visible across
+      -- terminals, and gently de-emphasize inactive splits.
+      opts.float = vim.tbl_deep_extend("force", opts.float or {}, {
+        transparent = false,
+        solid = false,
+      })
+      opts.dim_inactive = vim.tbl_deep_extend("force", opts.dim_inactive or {}, {
+        enabled = true,
+        shade = "dark",
+        percentage = 0.1,
+      })
+
       opts.highlight_overrides = opts.highlight_overrides or {}
 
       opts.highlight_overrides.mocha = function(C)
