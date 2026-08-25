@@ -76,53 +76,29 @@ return {
       end
     end
 
-    return opts
-  end,
+    -- Preserve LazyVim's setup and FileType hooks while limiting parser build
+    -- concurrency on smaller machines. Both methods accept max_jobs as part
+    -- of nvim-treesitter's public install options.
+    if not os.getenv("IS_COLOSSUS") then
+      local TS = require("nvim-treesitter")
+      if not TS._serial_parser_installs then
+        local install = TS.install
+        local update = TS.update
 
-  -- Override LazyVim’s treesitter config so non-Colossus installs are SERIAL.
-  config = function(_, opts)
-    local TS = require("nvim-treesitter")
-
-    if not TS.get_installed then
-      return vim.notify("Please update nvim-treesitter", vim.log.levels.ERROR)
-    end
-    if type(opts.ensure_installed) ~= "table" then
-      return vim.notify("opts.ensure_installed must be a table", vim.log.levels.ERROR)
-    end
-
-    TS.setup(opts)
-
-    -- Compute missing parsers
-    local installed = {}
-    for _, lang in ipairs(TS.get_installed() or {}) do
-      installed[lang] = true
-    end
-
-    local missing = {}
-    for _, lang in ipairs(opts.ensure_installed or {}) do
-      if not installed[lang] then
-        table.insert(missing, lang)
-      end
-    end
-
-    if #missing == 0 then
-      return
-    end
-
-    if os.getenv("IS_COLOSSUS") then
-      -- Parallel/async on Colossus.
-      TS.install(missing, { summary = true })
-    else
-      -- Strict serial everywhere else.
-      for _, lang in ipairs(missing) do
-        local handle = TS.install({ lang }, { summary = true })
-        if handle and handle.wait then
-          local ok = handle:wait(300000) -- 5 minutes per parser
-          if not ok then
-            vim.notify("Timed out installing treesitter parser: " .. lang, vim.log.levels.WARN)
-          end
+        TS.install = function(languages, options)
+          options = vim.tbl_extend("keep", options or {}, { max_jobs = 1 })
+          return install(languages, options)
         end
+
+        TS.update = function(languages, options)
+          options = vim.tbl_extend("keep", options or {}, { max_jobs = 1 })
+          return update(languages, options)
+        end
+
+        TS._serial_parser_installs = true
       end
     end
+
+    return opts
   end,
 }

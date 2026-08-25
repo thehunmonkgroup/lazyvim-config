@@ -9,38 +9,23 @@ return {
       opts.highlight_overrides = opts.highlight_overrides or {}
 
       opts.highlight_overrides.mocha = function(C)
-        return {
+        local color_utils = require("catppuccin.utils.colors")
+        local heading_colors = {
+          C.blue,
+          C.pink,
+          C.lavender,
+          C.green,
+          C.peach,
+          C.flamingo,
+        }
+
+        local highlights = {
           --------------------------------------------------------------------
           -- Markdown headings
           --
-          -- Rainbow hierarchy borrowed from a popular Catppuccin community
-          -- configuration. Makes document structure immediately obvious.
+          -- Tree-sitter groups are added below alongside render-markdown's
+          -- foreground and background groups so both layers share a palette.
           --------------------------------------------------------------------
-
-          ["@markup.heading.1.markdown"] = {
-            fg = C.blue,
-            style = { "bold" },
-          },
-          ["@markup.heading.2.markdown"] = {
-            fg = C.pink,
-            style = { "bold" },
-          },
-          ["@markup.heading.3.markdown"] = {
-            fg = C.lavender,
-            style = { "bold" },
-          },
-          ["@markup.heading.4.markdown"] = {
-            fg = C.green,
-            style = { "bold" },
-          },
-          ["@markup.heading.5.markdown"] = {
-            fg = C.peach,
-            style = { "bold" },
-          },
-          ["@markup.heading.6.markdown"] = {
-            fg = C.flamingo,
-            style = { "bold" },
-          },
 
           --------------------------------------------------------------------
           -- Emphasis
@@ -79,6 +64,20 @@ return {
             bg = C.mantle,
           },
 
+          -- These are the extmark groups used while render-markdown is
+          -- active. Keep them in lockstep with the captures above.
+          RenderMarkdownCode = {
+            bg = C.mantle,
+          },
+          RenderMarkdownCodeInline = {
+            fg = C.green,
+            bg = C.surface0,
+          },
+          RenderMarkdownCodeInfo = {
+            fg = C.yellow,
+            style = { "italic" },
+          },
+
           --------------------------------------------------------------------
           -- Links
           --------------------------------------------------------------------
@@ -106,6 +105,11 @@ return {
             style = { "italic", "underline" },
           },
 
+          RenderMarkdownLink = {
+            fg = C.sapphire,
+            style = { "bold" },
+          },
+
           --------------------------------------------------------------------
           -- Lists / tasks
           --------------------------------------------------------------------
@@ -124,6 +128,18 @@ return {
             fg = C.overlay1,
           },
 
+          RenderMarkdownBullet = {
+            fg = C.mauve,
+            style = { "bold" },
+          },
+          RenderMarkdownChecked = {
+            fg = C.green,
+            style = { "bold" },
+          },
+          RenderMarkdownUnchecked = {
+            fg = C.overlay1,
+          },
+
           --------------------------------------------------------------------
           -- Block quotes
           --------------------------------------------------------------------
@@ -131,6 +147,11 @@ return {
           -- Intentionally subdued. Quotes should read like secondary prose,
           -- not compete with headings.
           ["@markup.quote.markdown"] = {
+            fg = C.subtext0,
+            style = { "italic" },
+          },
+
+          RenderMarkdownQuote = {
             fg = C.subtext0,
             style = { "italic" },
           },
@@ -167,6 +188,14 @@ return {
             style = { "bold" },
           },
 
+          RenderMarkdownTableHead = {
+            fg = C.blue,
+            style = { "bold" },
+          },
+          RenderMarkdownTableRow = {
+            fg = C.lavender,
+          },
+
           --------------------------------------------------------------------
           -- Misc
           --------------------------------------------------------------------
@@ -176,6 +205,22 @@ return {
             style = { "italic" },
           },
         }
+
+        for level, color in ipairs(heading_colors) do
+          highlights[("@markup.heading.%d.markdown"):format(level)] = {
+            fg = color,
+            style = { "bold" },
+          }
+          highlights[("RenderMarkdownH%d"):format(level)] = {
+            fg = color,
+            style = { "bold" },
+          }
+          highlights[("RenderMarkdownH%dBg"):format(level)] = {
+            bg = color_utils.darken(color, 0.12, C.base),
+          }
+        end
+
+        return highlights
       end
     end,
   },
