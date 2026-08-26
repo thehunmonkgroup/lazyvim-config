@@ -5,6 +5,7 @@ return {
 
     opts = function(_, opts)
       opts.flavour = "mocha"
+      opts.term_colors = true
 
       -- Keep floating windows opaque and their rounded borders visible across
       -- terminals, and gently de-emphasize inactive splits.
