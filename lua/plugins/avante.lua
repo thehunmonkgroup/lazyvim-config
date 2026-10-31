@@ -1,4 +1,5 @@
-if os.getenv("ANTHROPIC_API_KEY") then
+if false then
+--if os.getenv("ANTHROPIC_API_KEY") then
   return {
     "yetone/avante.nvim",
     event = "VeryLazy",
